@@ -32,7 +32,7 @@
 ;$CLASS=Interface-editing
 ;$DIM=pseudo 2D
 ;$TYPE=direct excitation
-;$SUBTYPE=simple 1D
+;$SUBTYPE=
 ;$OWNER=tk506
 
 prosol relations=<solids_cp>
