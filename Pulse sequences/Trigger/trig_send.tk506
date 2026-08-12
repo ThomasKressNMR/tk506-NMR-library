@@ -1,0 +1,39 @@
+;Send TTL  signal on TTL1: negative edge
+;In ECLAB: TI / Falling edge / Current
+; Optional wait at the end for d1 if zgopt = -Dwait
+
+;Note:
+;- Orange = TTL output 1
+;- Blue = TTL output 2
+;- Green = TTL output 3
+;- Brown  = TTL output 4
+
+;$COMMENT=tk506
+;$CLASS=Trigger
+;$DIM=0d
+;$TYPE=
+;$SUBTYPE=
+;$OWNER=tk506
+
+
+
+#include <Avance.incl>
+
+"plw1 = 0"
+
+1 ze
+TTL1_LOW
+10m
+TTL1_HIGH
+10m
+TTL1_LOW
+
+#ifdef wait
+  d1
+#endif
+
+exit
+
+ph1=0 
+ph31=0
+

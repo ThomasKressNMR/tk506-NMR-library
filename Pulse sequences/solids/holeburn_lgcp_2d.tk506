@@ -1,6 +1,8 @@
 ;holeburn_lgcp_2d.tk506 (TopSpin 2.0)
 ;Made with despair by T. Kress on the 25/06/2020
 ;1H{13C} Redor hole burning with homonuclear decoupling
+;See: Q. Chen, K. Schmidt-Rohr, Measurement of the local 1H spin-diffusion coefficient in polymers, Solid State Nuclear Magnetic Resonance, Volume 29, Issues 1–3, 2006, https://doi.org/10.1016/j.ssnmr.2005.09.008
+;Also see Walder et al., Measurement of Proton Spin Diffusivity in Hydrated Cementitious Solids, J. Phys. Chem. Lett. (2019) 10 (17): 5064–5069. https://doi.org/10.1021/acs.jpclett.9b01861
 
 ;$COMMENT=tk506
 ;$CLASS=Interface-editing

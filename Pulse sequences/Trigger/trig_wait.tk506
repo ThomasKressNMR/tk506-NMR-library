@@ -1,0 +1,31 @@
+;Wait for TTL signal
+;if -Dnegative: (negative edge, i.e. 3.2V -> 0V) on trig1
+;else: (postiive edge, i.e. 0V -> 3.2V) on trig1
+
+;Note
+;- White twisted with Orange = TTL input 1
+;- White twisted with Blue = TTL input 2
+;- White twisted with Green = TTL input 3
+;- White twisted with Brown  = TTL input 4
+
+;$COMMENT=tk506
+;$CLASS=Trigger
+;$DIM=0d
+;$TYPE=
+;$SUBTYPE=
+;$OWNER=tk506
+
+#include <Avance.incl>
+
+
+#ifdef negative
+ 1s trignl1 ; negative edge 1->0
+#else
+ 1s trigpe1 ; positive edge 0->1
+#end
+
+exit
+
+ph1=0 
+ph31=0 2
+
