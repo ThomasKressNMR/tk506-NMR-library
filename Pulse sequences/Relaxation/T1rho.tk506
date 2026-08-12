@@ -1,0 +1,50 @@
+;T1rho.tk506
+
+;For the direct measurement of T1rho relaxation
+;Calculates spin lock power 
+;based on cpht1rho.av (TopSpin 2.0)
+
+; Topspin 4.1.4 
+
+;parameters:
+;d1 : recycle delay
+;vplist : list containing spin lock durations (us)
+;p1 : H 90 degree pulse
+;pl1 : H power level
+;pl2 : proton spin lock power level
+;FnMode : QF
+;cnst52: spinlock field in Hz ; calculated from p1/plw1
+
+;$COMMENT=proton T1rho experiment with X detection via cp
+;$CLASS=tk506
+;$DIM=pseudo 2D
+;$TYPE=Relaxation
+;$SUBTYPE=T1rho
+;$OWNER=tk506
+
+#include <trigg.incl>	;10 usec trigger pulse at TCU connector I cable 6
+
+define list<pulse> vp_list = <$VPLIST>
+"cnst53 = (1/(4*p1))*1000000"
+"plw2=plw1*pow(10,(2*log10(cnst52/cnst53)))"
+"d52 = 1/cnst52"
+
+1 ze			;accumulate into an empty memory
+d52
+2 d1 
+  10u pl1:f1
+  trigg			;trigger for scope, 10 usec
+  p1:f1 ph1		;proton 90 pulse
+  0.3u
+  (vp_list pl2 ph10):f1 	;proton spin lock pulse at pl2
+  
+  go=2 ph31  	
+  1m 
+  10m mc #0 to 2 F1QF(vp_list.inc)
+HaltAcqu, 1m		;jump address for protection files
+exit			;quit
+
+ph0= 0
+ph1= 0 1 2 3
+ph10=1 2 3 0
+ph31=0 1 2 3

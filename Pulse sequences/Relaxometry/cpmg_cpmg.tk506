@@ -1,0 +1,111 @@
+; simplified by tk506 from diffRexsy3D 
+; avance-version (20/11/13)
+; 3D version for AVNEO KLZ 03.05.2018
+; T2-T2-Exchange experiment
+; K. E. Washburn and P. T. Callaghan, PRL 97, 175502 (2006) 
+;
+
+; Parameters
+define list<loopcounter> cpmg=<$VCLIST>
+define list<loopcounter> cpmg2=<$VCLIST>
+
+define delay cpmgtime
+"cpmgtime = cpmg.max*(d4*2+p2)" 
+
+"p2=p1*2"
+"l23 = 1"
+;"d12=de"
+"acqt0=0"
+
+; Acquisition sequence
+aqseq 321
+
+"d26 = 0.5*(1s/(2*cnst10)-p2)"
+"d4 = 0.5*(1s/(2*cnst10)-p2)"
+"d3 = d4-de"
+
+ze
+cpmgtime
+10u 
+5m pl1:f1 ; Set rf power level
+
+start, 1u
+
+#ifdef train
+
+    2 d20
+      (p1 pl1 ph4):f1
+      lo to 2 times l20
+    d1
+#else
+#ifdef saturation
+        10u pl9:f1
+        d1 cw:f1 ph29
+        1u do:f1 pl1:f1
+#else
+        d1
+#endif
+#endif
+
+p1:f1 ph1
+cpmgLoop2, d26
+    p2 ph2 ;ph4
+    d26
+    lo to cpmgLoop2 times cpmg2
+    p1 ph3
+    d8
+    "l23=cpmg-1"
+    p1 ph11
+    d4
+cpmgLoop, p2 ph2
+    d4
+    d4
+    lo to cpmgLoop times l23
+    p2 ph2
+d3
+go=start ph31
+30m wr #0 if #0 zd cpmg.inc
+lo to start times td2
+1u cpmg2.inc
+lo to start times td1
+
+exit
+
+;ph1=0 0 2 2 1 1 3 3 
+;ph2=1 3 1 3 0 2 0 2
+;ph3=2 2 0 0 3 3 1 1   0 0 2 2 1 1 3 3
+;ph11=0 0 2 2 1 1 3 3   2 2 1 1 3 3 1 1
+;ph4 = 0
+;ph29 = 0
+;ph30=0
+;ph31=0 0 2 2 1 1 3 3
+
+ph1= 0 0 0 0  2 2 2 2
+ph2= 1 3 1 3  1 3 1 3
+ph3= 2 2 0 0  0 0 2 2
+ph11=0 0 2 2  2 2 1 1
+ph4 = 0
+ph29 = 0
+ph30=0
+ph31=0 0 0 0  2 2 2 2
+
+;pl1: f1 channel - power level for pulse (default)
+;p1: f1 channel - 90 degree high power pulse
+;p2: f1 channel - 180 degree high power pulse
+;d1: relaxation delay; 1-5 * T1
+;d3: echo delay in the first cpmg loop
+;d4: echo delay in the first cpmg loop
+;d8: mixing time
+;d26: echo delay in the second cpmg loop
+;ns: 8 * n
+;ds: 0 (seem not to work correctly)
+;td1: number of experiments in F1 = number of values in vc_list ($VCLIST)
+;td2: number of experiments in F2 = number of values in vclist ($VCLIST)
+;nbl: must be td2
+;cnst10: cpmg frequency
+;define VCLIST - first cpmg loop
+;vc: vc should contain even numbers to provide for cancellation of 180-degree pulse errors
+;pl9: saturation power
+;l20: number of saturation pulse
+;d20: saturation delay
+;$Id:$

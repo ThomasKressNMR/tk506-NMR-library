@@ -1,0 +1,84 @@
+;hahnecho2d_vd.tk506
+;new version compatible with nqr
+; tk506 modification: record at peak of echo to remove first order phase correction
+; uses VD list. VD = total echo time. If rotor-synchronised, VD/2 should be a multiple of spinning period
+;
+;
+;parameters:
+;pl1 : RF power level for 90/180
+;p1 : 90 degree pulse
+;p2 : =p1*2, 180 degree pulse
+;d1 : recycle delay
+;d6 : echo delay (calculated)
+;l1 : # of rotor cycles (or tau in us)
+;ns : 16*n
+;zgoptns : -Ddec (if decoupling desired) or blank
+;
+;
+;$CLASS=Solids
+;$DIM=1D
+;$TYPE=direct excitation
+;$SUBTYPE=simple 1D
+;$COMMENT=Hahn-Echo experiment, MAS or static, standard parameters
+
+prosol relations=<solids_default>
+
+
+"p2=p1*2"
+"d6 = 1u"
+
+;cnst11 : to adjust t=0 for acquisition, if digmod = baseopt
+"acqt0=0"
+
+# ifdef dec
+;pcpd2 : pulse length in decoupling sequence
+;pl2 : =120 dB, not used
+;pl12 : standard decoupling power level
+;pl13 : e.g. used in tppm13
+# endif /* dec */
+
+define list<delay> vd_list=<$VDLIST>
+
+1 ze
+"d6=vd_list/2-(p1/2)-(p2/2)"
+"d7=vd_list/2-de-(p2/2)"
+
+2 10m 
+# ifdef dec
+  d1 do:f2
+# else
+#ifdef pr
+1u pl9:f1
+  d1 cw:f1 ph29
+# else
+d1
+#endif
+1u do:f1
+# endif /* dec */
+  (p1 pl1 ph1):f1
+# ifdef dec
+  d6 cpds2:f2
+# else  
+  d6
+# endif /* dec */
+  (p2 ph2):f1
+# ifndef full
+  d7
+# endif
+  go=2 ph31
+# ifdef dec
+  1m do:f2
+# endif /* dec */
+  10m wr #0 if #0 vd_list.inc
+lo to 1 times td1
+exit
+
+ph0=0
+ph1=0 1 2 3
+ph2=0 0 0 0 1 1 1 1 2 2 2 2 3 3 3 3
+ph29 = 0
+ph30=0
+ph31=1 0 3 2 3 2 1 0
+
+
+;$Id:$

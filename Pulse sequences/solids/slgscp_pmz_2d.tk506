@@ -1,0 +1,98 @@
+; slgscp_pmz.tk506 (TopSpin 4.1.4)
+; spinlock Goldman-Shen experiment - Storage +- Z - CP 1H -> 13C
+; Written by tk506 09/06/22
+;Interface-edited solid-state NMR to study cell interfaces
+;Thomas Kress & Melinda J. Duer 
+;Communications Chemistry volume 8, Article number: 86 (2025) 
+
+;parameters:
+;ns : 8 * n
+;d1 : recycle delay
+
+; ### T1rho filter ###
+;p3 : proton 90 at power level pl3
+;p6 : spin lock time
+;pl6: spin lock power level
+;cnst6: spin lock strength /kHz
+
+; ### Spin diffusion ###
+;d8 : spin diffusion delay
+
+; ### For CP ###
+;p15 : contact time at pl1 (f1) and pl2 (f2)
+;pl1 : X power level during contact
+;pl2 : 0w not used
+;pl12 : pulse and decoupling power level (if not pl13)
+;d1 : recycle delay
+;p31 : spinal64 pulse length
+;cpdprg2 :spinal64
+;spnam0 :ramp70100.100
+
+;$COMMENT=tk506
+;$CLASS=Interface-editing
+;$DIM=pseudo 2D
+;$TYPE=direct excitation
+;$SUBTYPE=simple 1D
+;$OWNER=tk506
+
+prosol relations=<solids_cp>
+
+define list<delay> vd_list = <$VDLIST>
+
+#include <trigg.incl>
+			;10 usec trigger pulse at TCU connector I cable 6
+
+"cnst53 = (1/(4*p3))*1000000"
+"plw6=plw12*pow(10,(2*log10(cnst6/cnst53)))"
+"d6 = 1/cnst6"
+
+1 ze
+2 d1 do:f2		;recycle delay, decoupler off in go-loop
+#include <p15_prot.incl>	
+			;make sure p15 does not exceed 10 msec	
+			;let supervisor change this pulseprogram if 
+			;more is needed
+#ifndef lacq	/* disable protection file for long acquisition change decoupling power !!! or you risk probe damage */
+		/* if you set the label lacq (ZGOPTNS -Dlacq), the protection is disabled */
+
+#include <aq_prot.incl>	
+			;allows max. 50 msec acquisition time, supervisor
+			;may change  to max. 1s at less than 5 % duty cycle
+			;and reduced decoupling field
+#endif
+
+  1u fq=cnst21:f2
+  10u pl12:f2 pl1:f1	;preselect pl12 drive power for F2, pl1 for F1
+  trigg			;trigger for scope, 10 usec
+
+	; ### Spin locking protons
+  (p3 ph1):f2 ; proton 90 deg
+  (p6 pl6 ph2):f2	;proton spin lock pulse at pl14
+
+	; ### +z storage for spin diffusion
+	(p3 pl12 ph3):f2
+  vd_list
+  ; ### Cross polarisation with usual phase cycling
+  trigg  
+  p3:f2 ph11		;proton 90 
+  0.3u
+  (p15 pl1 ph12):f1 (p15:sp0 ph10):f2 	;contact pulse with square or ramp
+  
+  1u cpds2:f2 		;pl12 is used here with tppm, pl13 with cwlg, cwlgs
+  go=2 ph31  	
+  1m do:f2		;decoupler off
+  1m 
+  10m mc #0 to 2 F1QF(vd_list.inc)
+HaltAcqu, 1m		;jump address for protection files
+exit			;quit
+
+
+ph0=  0
+ph1=  0 1 2 3
+ph2=  1 2 3 0
+ph3=  2 3 0 1  2 3 0 1  0 1 2 3  0 1 2 3
+; ++++++++++++++++++++ ----------------
+ph10= 0
+ph11= 3 1 3 1  3 1 3 1  1 3 1 3  1 3 1 3
+ph12= 0 0 2 2  1 1 3 3
+ph31= 0 2 2 0  1 3 3 1

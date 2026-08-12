@@ -1,0 +1,95 @@
+;noesyph
+;2D homonuclear correlation via dipolar coupling 
+;dipolar coupling may be due to noe or chemical exchange.
+;phase sensitive
+;
+;$CLASS=tk506
+;$DIM=2D
+;$TYPE=cross polarisation
+;$SUBTYPE=simple 1D
+;$COMMENT=basic cp experiment, flipback pulse on X for 90-degree pulse calibration
+
+prosol relations=<solids_cp>
+
+
+#include <Avance.incl>
+
+
+"in0=inf1"
+
+"d0=in0/2-p1*4/3.1416"
+
+
+"acqt0=-p1*2/3.1416"
+
+
+1 ze
+2 d1
+  #ifndef lcp15
+  #include <p15_prot.incl>
+        ;make sure p15 does not exceed 10 msec 
+        ;let supervisor change this pulseprogram if 
+        ;more is needed
+  #endif
+
+  #ifndef lacq		
+        ;disable protection file for long acquisition change decoupling power !!! or you risk probe damage
+        ;if you set the label lacq (ZGOPTNS -Dlacq), the protection is disabled
+
+  #include <aq_prot.incl>	
+        ;allows max. 50 msec acquisition time, supervisor
+        ;may change  to max. 1s at less than 5 % duty cycle
+        ;and reduced decoupling field
+  #endif
+
+  1u fq=cnst21:f2
+  (p3 pl12 ph11):f2
+  (p15 pl1 ph12):f1 (p15:sp0 ph20):f2
+  (p1 pl2 ph13):f1 
+  d2
+3 p1 ph1
+  d0
+  p1 ph2
+  d8
+  p1 ph3
+  go=2 ph31
+  d1 mc #0 to 2 F1PH(calph(ph1, +90), caldel(d0, +in0))
+HaltAcqu, 1m
+exit
+
+
+ph1=0 2 
+ph2=0 0 0 0 0 0 0 0 2 2 2 2 2 2 2 2
+ph3=0 0 2 2 1 1 3 3
+ph31=0 2 2 0 1 3 3 1 2 0 0 2 3 1 1 3
+
+ph11= 1 3
+ph12= 0 0 2 2 1 1 3 3
+ph13 =  1 3 3 1 2 0 0 2
+ph20 =0 
+
+;pl1 : f1 channel - power level for pulse (default)
+;p1 : f1 channel -  90 degree high power pulse
+;pl2 : f1 channel power for 90 degree pulses
+
+;d0 : incremented delay (2D)
+;d1 : relaxation delay; 1-5 * T1
+;d8 : mixing time
+;inf1: 1/SW = 2 * DW
+;in0: 1/(1 * SW) = 2 * DW
+;nd0: 1
+;ns: 8 * n
+;ds: 16
+;td1: number of experiments
+;FnMODE: States-TPPI, TPPI, States or QSEQ
+
+
+;Processing
+
+;PHC0(F1): 90
+;PHC1(F1): -180
+;FCOR(F1): 1
+
+
+
+;$Id:$

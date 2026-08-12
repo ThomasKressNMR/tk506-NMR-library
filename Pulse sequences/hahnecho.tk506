@@ -1,0 +1,107 @@
+;hahnecho.tk506
+;record at peak of echo to remove first order phase correction. 
+; Note that this simplify things, but the first half of the FID is wasted, so you need to be happy wiht that
+
+; for static experiments enter cnst31 = 1e6 and set l1 to desired echo delay in us
+;
+;
+;parameters:
+;pl1 : RF power level for 90/180
+;p1 : 90 degree pulse
+;p2 : =p1*2, 180 degree pulse
+;d1 : recycle delay
+;d6 : echo delay (calculated)
+;cnst31 : =MAS spin rate (or =1e6 for static)
+;l1 : # of rotor cycles (or tau in us)
+;ns : 16*n
+;zgoptns : -Ddec (if decoupling desired) or blank
+;
+;
+;$CLASS=tk506
+;$DIM=1D
+;$TYPE=direct excitation
+;$SUBTYPE=simple 1D
+;$COMMENT=Hahn-Echo experiment, MAS or static, standard parameters
+
+prosol relations=<solids_default>
+
+
+"p2=p1*2"
+
+#ifndef delay
+"d6=((1s*l1)/cnst31)-(p1/2)-(p2/2)"
+"d7=((1s*l1)/cnst31)-de-(p2/2)"
+define delay totalechotime
+"totalechotime = 2*((1s*l1)/cnst31) "
+#else 
+
+#endif
+
+
+;cnst11 : to adjust t=0 for acquisition, if digmod = baseopt
+"acqt0=0"
+
+# ifdef dec
+;pcpd2 : pulse length in decoupling sequence
+;pl2 : =120 dB, not used
+;pl12 : standard decoupling power level
+;pl13 : e.g. used in tppm13
+# endif /* dec */
+
+# ifdef decacqu
+;pcpd2 : pulse length in decoupling sequence
+;pl2 : =120 dB, not used
+;pl12 : standard decoupling power level
+;pl13 : e.g. used in tppm13
+# endif /* dec */
+
+1 ze
+# ifndef full
+totalechotime
+#endif
+2 10m 
+
+# ifdef decacqu /* decacqu */
+d1 do:f2
+ (p1 pl1 ph1):f1
+d6
+ (p2 ph2):f1
+  d7 
+  go=2 ph31  cpds2:f2
+  1m do:f2
+
+# else
+
+# ifdef dec
+  d1 do:f2
+# else
+  d1
+# endif /* dec */
+  (p1 pl1 ph1):f1
+# ifdef dec
+  d6 cpds2:f2
+# else  
+  d6
+# endif /* dec */
+  (p2 ph2):f1
+# ifndef full
+  d7
+# endif
+  go=2 ph31
+# ifdef dec
+  1m do:f2
+# endif /* dec */
+
+# endif /* decacqu */
+
+  10m mc #0 to 2 F0(zd)
+exit
+
+ph0=0
+ph1=0 1 2 3
+ph2=0 0 0 0 1 1 1 1 2 2 2 2 3 3 3 3
+ph30=0
+ph31=1 0 3 2 3 2 1 0
+
+
+;$Id:$

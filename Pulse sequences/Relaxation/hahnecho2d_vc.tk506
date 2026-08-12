@@ -1,0 +1,76 @@
+;hahnecho2d_vc.tk506
+;
+; tk506 modification: record at peak of echo to remove first order phase correction
+; uses VC list. Echo delay = 2*VC/cnst31, where cnst31 is the MAS rate
+; for static experiments enter cnst31 = 1e6 and set l1 to desired echo delay in us
+;
+;
+;parameters:
+;pl1 : RF power level for 90/180
+;p1 : 90 degree pulse
+;p2 : =p1*2, 180 degree pulse
+;d1 : recycle delay
+;d6 : echo delay (calculated)
+;cnst31 : =MAS spin rate (or =1e6 for static)
+;l1 : # of rotor cycles (or tau in us)
+;ns : 16*n
+;zgoptns : -Ddec (if decoupling desired) or blank
+;
+;
+;$CLASS=tk506
+;$DIM=pseudo 2D
+;$TYPE=relaxation
+;$SUBTYPE= 
+;$COMMENT= 
+
+prosol relations=<solids_default>
+
+
+"p2=p1*2"
+"d31 = 1/cnst31"
+
+;cnst11 : to adjust t=0 for acquisition, if digmod = baseopt
+"acqt0=0"
+
+# ifdef dec
+;pcpd2 : pulse length in decoupling sequence
+;pl2 : =120 dB, not used
+;pl12 : standard decoupling power level
+;pl13 : e.g. used in tppm13
+# endif /* dec */
+
+define list<loopcounter> vc_list=<$VCLIST>
+
+1 ze
+"d6=(vc_list)*d31-(p1/2)-(p2/2)"
+"d7=(vc_list)*d31-de-(p2/2)"
+2 10m 
+# ifdef dec
+  d1 do:f2
+# else
+  d1
+# endif /* dec */
+  (p1 pl1 ph1):f1
+# ifdef dec
+  d6 cpds2:f2
+# else  
+  d6
+# endif /* dec */
+  (p2 ph2):f1
+  d7
+  go=2 ph31
+# ifdef dec
+  1m do:f2
+# endif /* dec */
+  10m wr #0 if #0 vc_list.inc
+lo to 1 times td1
+exit
+
+ph0=0
+ph1=0 1 2 3
+ph2=0 0 0 0 1 1 1 1 2 2 2 2 3 3 3 3
+ph30=0
+ph31=1 0 3 2 3 2 1 0
+
+
+;$Id:$

@@ -1,0 +1,106 @@
+; T1_oneshot.tk506
+; inspired from  Moraes, T. B.; Monaretto, T.; Colnago, L.
+;A. Rapid and Simple Determination of T 1 Relaxation Times in Time-Domain NMR by Continuous Wave Free Precession Sequence. ;
+;Journal of Magnetic Resonance 2016, 270, 16. https://doi.org/10.1016/j.jmr.2016.06.019.
+
+; but no phase cycling
+
+;$CLASS=tk506
+;$DIM=1D
+;$TYPE=Relaxation
+;$SUBTYPE=
+;$COMMENT=
+ 
+#include <Avance.incl>
+#include <Delay.incl>
+#include <De.incl>
+ 
+"DELTA = de+d12"
+"TAU1=dw-0.05u"
+"TAU2=dw"
+
+define loopcounter lcount1
+define loopcounter lcount2
+define loopcounter td_val
+"lcount1=l20"
+"lcount2=grpdly"
+"td_val=(l20+grpdly)*2"
+"d2 = d3/2"
+"p2=p1*2"
+"p3 = p1*cnst1/90"
+define delay delta1
+"delta1 = d3/2-0.05u-0.1u-0.1u-p2/2-p1/2"
+define delay delta2
+"delta2 = d3-p3-DELTA-0.1u-0.05u-TAU1-TAU2-0.05u-0.1u"
+
+define delay acquisitiontime
+"acquisitiontime = 2*l20*d3"
+ 
+"plw10 = 0"
+
+1 ze
+ d12 pl1:f1
+;acquisitiontime
+2 30m
+ 20u ip30+cnst30
+ d1
+ 
+ ACQ_START(ph30,ph31)
+ 0.05u DWELL_HOLD
+ 0.1u START_NEXT_SCAN
+ 0.1u REC_BLK
+
+ (p2 ph1)
+4 delta2
+ (p3 ph2):f1
+ DELTA
+ 0.1u REC_UNBLK
+ 0.05u DWELL_RELEASE
+ TAU1; detection
+ TAU2; detection
+ 0.05u DWELL_HOLD
+ 0.1u REC_BLK
+
+ lo to 4 times lcount1
+
+5 delta2
+ (p3 ph2):f1
+ DELTA
+
+ 0.1u REC_UNBLK
+ 0.05u DWELL_RELEASE
+ TAU1; detection
+ TAU2;detection
+ 0.05u DWELL_HOLD
+ 0.1u REC_BLK
+
+
+ lo to 5 times lcount2
+ 0.1u REC_BLK
+ 0.05u DWELL_RELEASE
+ rcyc = 2
+ wr #0
+exit
+
+ph1=0 
+ph2=0 
+ph3 = 0
+ph30=0
+ph31=3
+
+;pl1 : f1 channel - power level for pulse (default)
+;pl10: 0 W
+;p1 : f1 channel - 90 degree high power pulse
+;p2 : f1 channel - 180 degree high power pulse
+;p3 : f1 channel - 180 degree high power pulse
+;d3: Tp, interpulse delay
+;cnst1: flip angle in degrees
+
+;d1 : relaxation delay; 1-5 * T1
+;d12: delay for power switching      [0-20 usec]
+;cnst30: additional receiver phase setting to have intensity in real channel
+;ns: 1 * n, total number of scans: NS * Td3
+;td: l20 * 2
+;l20: number of flip pulses
+
+;$Id:$
